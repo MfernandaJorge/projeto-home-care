@@ -29,8 +29,7 @@ public class ProfissionalController {
                                                                      @RequestParam(defaultValue = "10") int size,
                                                                      @RequestParam(defaultValue = "id") String sortBy,
                                                                      @RequestParam(defaultValue = "false") boolean desc) {
-        Page<OutProfissionalDto> profissionais = service.findAllPaginated(page, size, sortBy, desc);
-        return ResponseEntity.ok(profissionais);
+        return ResponseEntity.ok(service.findAllPaginated(page, size, sortBy, desc));
     }
 
     @GetMapping("/all")

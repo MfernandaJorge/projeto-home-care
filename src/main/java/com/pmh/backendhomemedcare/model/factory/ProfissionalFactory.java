@@ -9,6 +9,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ProfissionalFactory {
+    private final EnderecoFactory enderecoFactory;
+
+    public ProfissionalFactory(EnderecoFactory enderecoFactory) {
+        this.enderecoFactory = enderecoFactory;
+    }
+
     public Profissional createProfissionalFromDto(InProfissionalDto inProfissionalDto, Endereco endereco) {
         Profissional profissional = new Profissional();
         profissional.setNome(inProfissionalDto.nome());
@@ -24,14 +30,7 @@ public class ProfissionalFactory {
                 profissional.getId(),
                 profissional.getNome(),
                 profissional.getDocumento(),
-                new OutEnderecoDto(
-                        profissional.getEndereco().getLogradouro(),
-                        profissional.getEndereco().getBairro(),
-                        profissional.getEndereco().getCidade(),
-                        profissional.getEndereco().getEstado(),
-                        profissional.getEndereco().getCep(),
-                        profissional.getEndereco().getNumero()
-                ),
+                enderecoFactory.toOutEnderecoDto(profissional.getEndereco()),
                 profissional.getOcupacao(),
                 profissional.getTelefone()
         );
