@@ -32,7 +32,8 @@ public class ProfissionalFactory {
                 profissional.getDocumento(),
                 enderecoFactory.toOutEnderecoDto(profissional.getEndereco()),
                 profissional.getOcupacao(),
-                profissional.getTelefone()
+                profissional.getTelefone(),
+                profissional.getEmail()
         );
     }
 }

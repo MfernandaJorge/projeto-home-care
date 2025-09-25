@@ -18,5 +18,6 @@ public class Profissional {
     private Endereco endereco;
     private int ocupacao;
     private int telefone;
+    private String email;
 
 }

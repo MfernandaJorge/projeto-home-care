@@ -6,5 +6,6 @@ public record OutProfissionalDto(
         String documento,
         OutEnderecoDto endereco,
         Integer ocupacao,
-        Integer telefone
+        Integer telefone,
+        String email
 ) {}
