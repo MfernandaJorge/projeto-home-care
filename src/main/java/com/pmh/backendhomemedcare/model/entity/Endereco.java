@@ -16,4 +16,6 @@ public class Endereco {
     private String estado;
     private String cep;
     private int numero;
+    private double distanceKm;
+    private double durationMin;
 }

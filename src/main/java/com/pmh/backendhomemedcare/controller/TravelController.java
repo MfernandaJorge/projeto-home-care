@@ -7,7 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/travel")
+@RequestMapping("/api/travel")
 public class TravelController {
 
     private final TravelTimeService travelTimeService;

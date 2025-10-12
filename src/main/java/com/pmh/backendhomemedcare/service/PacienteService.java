@@ -24,18 +24,23 @@ public class PacienteService {
     private final EnderecoRepo enderecoRepo;
     private final PacienteFactory pacienteFactory;
     private final EnderecoFactory enderecoFactory;
+    private final EnderecoService enderecoService;
 
-    public PacienteService(PacienteRepository repository, EnderecoRepo enderecoRepo, PacienteFactory pacienteFactory, EnderecoFactory enderecoFactory) {
+
+    public PacienteService(PacienteRepository repository, EnderecoRepo enderecoRepo, PacienteFactory pacienteFactory,
+                           EnderecoFactory enderecoFactory, EnderecoService enderecoService) {
         this.repository = repository;
         this.enderecoRepo = enderecoRepo;
         this.pacienteFactory = pacienteFactory;
         this.enderecoFactory = enderecoFactory;
+        this.enderecoService = enderecoService;
     }
 
     public OutGenericStringDto create(InPacienteDto dto) {
         Endereco endereco = enderecoFactory.createEnderecoFromDto(dto.inEnderecoDto());
+
         Endereco existingEndereco = enderecoRepo.findByEndereco(endereco)
-                .orElseGet(() -> enderecoRepo.save(endereco));
+                .orElseGet(() -> enderecoService.getOrCreateEndereco(endereco));
 
         Paciente paciente = pacienteFactory.createPacienteFromDto(dto, existingEndereco);
         repository.save(paciente);

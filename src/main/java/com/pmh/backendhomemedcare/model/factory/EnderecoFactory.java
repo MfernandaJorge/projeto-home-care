@@ -26,7 +26,9 @@ public class EnderecoFactory {
                 endereco.getCidade(),
                 endereco.getEstado(),
                 endereco.getCep(),
-                endereco.getNumero()
+                endereco.getNumero(),
+                endereco.getDistanceKm(),
+                endereco.getDurationMin()
         );
     }
 }
