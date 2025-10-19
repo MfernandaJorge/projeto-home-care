@@ -10,14 +10,19 @@ public class Profissional {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String nome;
+
     private String documento;
 
     @ManyToOne
     @JoinColumn(name = "endereco_id", nullable = false)
     private Endereco endereco;
+
     private int ocupacao;
+
     private int telefone;
+
     private String email;
 
 }

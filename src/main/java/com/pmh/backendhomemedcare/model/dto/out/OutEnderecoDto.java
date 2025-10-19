@@ -8,5 +8,7 @@ public record OutEnderecoDto(
         String cep,
         Integer numero,
         Double distanceKm,
-        Double durationMin
+        Double durationMin,
+        Double latitude,
+        Double longitude
 ) {}

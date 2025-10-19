@@ -66,8 +66,10 @@ public class PacienteService {
                 .orElseThrow(() -> new RuntimeException("Paciente not found"));
 
         Endereco endereco = enderecoFactory.createEnderecoFromDto(dto.inEnderecoDto());
+
         Endereco existingEndereco = enderecoRepo.findByEndereco(endereco)
-                .orElseGet(() -> enderecoRepo.save(endereco));
+                .orElseGet(() -> enderecoService.getOrCreateEndereco(endereco));
+
 
         existingPaciente.setNome(dto.nome());
         existingPaciente.setDocumento(dto.documento());

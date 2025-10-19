@@ -28,7 +28,9 @@ public class EnderecoFactory {
                 endereco.getCep(),
                 endereco.getNumero(),
                 endereco.getDistanceKm(),
-                endereco.getDurationMin()
+                endereco.getDurationMin(),
+                endereco.getLatitude(),
+                endereco.getLongitude()
         );
     }
 }
