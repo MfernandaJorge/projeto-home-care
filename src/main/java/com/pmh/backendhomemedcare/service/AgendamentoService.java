@@ -1,10 +1,13 @@
 package com.pmh.backendhomemedcare.service;
 
 import com.pmh.backendhomemedcare.model.dto.in.InAgendamentoDto;
+import com.pmh.backendhomemedcare.model.dto.in.InCancelarAgendamentoDto;
+import com.pmh.backendhomemedcare.model.dto.out.OutAtendimentoDiaDto;
 import com.pmh.backendhomemedcare.model.dto.out.OutGenericStringDto;
 import com.pmh.backendhomemedcare.model.dto.out.OutSugestaoAgendamentoDto;
 import com.pmh.backendhomemedcare.model.entity.*;
 import com.pmh.backendhomemedcare.repository.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +15,7 @@ import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class AgendamentoService {
 
@@ -35,9 +39,6 @@ public class AgendamentoService {
         this.jornadaService = jornadaService;
     }
 
-    // ============================================================
-    // 🔹 Criação de agendamento
-    // ============================================================
     @Transactional
     public OutGenericStringDto criarAgendamento(InAgendamentoDto dto) {
         if (dto == null)
@@ -59,11 +60,12 @@ public class AgendamentoService {
         }
 
         LocalDateTime inicio = LocalDateTime.of(dto.diaDesejado(), dto.horaDesejada());
-        LocalDateTime fim = inicio.plusMinutes(tipo.getDuracaoMinutos());
+        LocalDateTime fim = inicio.plusMinutes(tipo.getDuracaoMinutos())
+                                  .plusMinutes((long) paciente.getEndereco().getDurationMin());
 
         // 🔍 Verifica conflito se o profissional foi informado
         if (profissional != null) {
-            boolean conflita = agendamentoRepo.existsByProfissionalAndIntervalo(
+            boolean conflita = agendamentoRepo.existsConflitoCriacao(
                     profissional.getId(), inicio, fim
             );
             if (conflita) {
@@ -86,22 +88,17 @@ public class AgendamentoService {
                 (profissional != null ? " com " + profissional.getNome() : ""));
     }
 
-    // ============================================================
-    // 🔹 Simulação de horários disponíveis
-    // ============================================================
+
     public List<OutSugestaoAgendamentoDto> simularHorarios(InAgendamentoDto dto) {
-        SimulacaoContexto ctx = prepararContexto(dto);
+        SimulacaoContexto dadosParaSimulacao = prepararContexto(dto);
 
-        Map<Long, JornadaProfissional> jornadas = carregarJornadas(ctx.profissionais());
+        Map<Long, JornadaProfissional> jornadas = carregarJornadas(dadosParaSimulacao.profissionais());
 
-        return ctx.profissionais().stream()
-                .flatMap(prof -> gerarSugestoesParaProfissional(prof, ctx, jornadas.get(prof.getId())).stream())
+        return dadosParaSimulacao.profissionais().stream()
+                .flatMap(prof -> gerarSugestoesParaProfissional(prof, dadosParaSimulacao, jornadas.get(prof.getId())).stream())
                 .collect(Collectors.toList());
     }
 
-    // ============================================================
-    // 🔸 Métodos auxiliares privados
-    // ============================================================
 
     private SimulacaoContexto prepararContexto(InAgendamentoDto dto) {
         Objects.requireNonNull(dto, "DTO não pode ser nulo");
@@ -153,7 +150,7 @@ public class AgendamentoService {
         LocalDate dataInicial = ctx.referencia().toLocalDate();
         LocalDate dataFinal = dataInicial.plusDays(ctx.dias() - 1);
 
-        List<Agendamento> agenda = agendamentoRepo.findByProfissionalIdAndInicioBetween(
+        List<Agendamento> agenda = agendamentoRepo.findAtivosByProfissionalIdAndInicioBetween(
                 prof.getId(),
                 dataInicial.atStartOfDay(),
                 dataFinal.atTime(LocalTime.MAX)
@@ -215,6 +212,45 @@ public class AgendamentoService {
 
         return new TimeRange(inicioJanela, fimJanela);
     }
+
+    @Transactional
+    public OutGenericStringDto cancelarAgendamento(InCancelarAgendamentoDto dto) {
+        if (dto == null || dto.agendamentoId() == null) {
+            throw new IllegalArgumentException("Dados de cancelamento inválidos");
+        }
+
+        Agendamento ag = agendamentoRepo.findById(dto.agendamentoId())
+                .orElseThrow(() -> new RuntimeException("Agendamento não encontrado"));
+
+        if (ag.isCancelado()) {
+            return new OutGenericStringDto("Agendamento " + ag.getId() + " já está cancelado.");
+        }
+        if (ag.isConcluido()) {
+            throw new RuntimeException("Não é possível cancelar um agendamento já concluído.");
+        }
+
+        ag.setCancelado(true);
+        ag.setCanceladoEm(LocalDateTime.now());                 // ✅ registra o horário
+        if (dto.motivo() != null && !dto.motivo().isBlank()) {  // ✅ registra o motivo (opcional)
+            ag.setMotivoCancelamento(dto.motivo().trim());
+        }
+
+        agendamentoRepo.save(ag);
+
+        return new OutGenericStringDto(
+                "✅ Agendamento " + ag.getId() + " cancelado" +
+                        (ag.getMotivoCancelamento() != null ? " (motivo: " + ag.getMotivoCancelamento() + ")" : "") +
+                        " às " + ag.getCanceladoEm() + "."
+        );
+    }
+
+    public List<OutAtendimentoDiaDto> listarNaoCanceladosDoDia(LocalDate dia) {
+        if (dia == null) dia = LocalDate.now();
+        LocalDateTime inicio = dia.atStartOfDay();
+        LocalDateTime fim = dia.atTime(LocalTime.MAX);
+        return agendamentoRepo.listarNaoCanceladosNoPeriodo(inicio, fim);
+    }
+
 
     // ============================================================
     // 🔸 Records auxiliares (estruturas imutáveis internas)

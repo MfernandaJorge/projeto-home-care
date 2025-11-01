@@ -26,5 +26,10 @@ public class Agendamento {
 
     private boolean concluido = false;
     private boolean cancelado = false;
+
+    private LocalDateTime canceladoEm;
+
+    @Column(length = 1000)
+    private String motivoCancelamento;
 }
 

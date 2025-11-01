@@ -1,12 +1,16 @@
 package com.pmh.backendhomemedcare.controller;
 
 import com.pmh.backendhomemedcare.model.dto.in.InAgendamentoDto;
+import com.pmh.backendhomemedcare.model.dto.in.InCancelarAgendamentoDto;
+import com.pmh.backendhomemedcare.model.dto.out.OutAtendimentoDiaDto;
 import com.pmh.backendhomemedcare.model.dto.out.OutGenericStringDto;
 import com.pmh.backendhomemedcare.model.dto.out.OutSugestaoAgendamentoDto;
 import com.pmh.backendhomemedcare.service.AgendamentoService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -19,19 +23,28 @@ public class AgendamentoController {
         this.service = service;
     }
 
-    /**
-     * Cria um novo agendamento confirmado.
-     */
     @PostMapping("/agendar")
     public ResponseEntity<OutGenericStringDto> criarAgendamento(@RequestBody InAgendamentoDto dto) {
         return ResponseEntity.ok(service.criarAgendamento(dto));
     }
 
-    /**
-     * Simula horários disponíveis para um paciente/profissional.
-     */
     @PostMapping("/simular")
     public ResponseEntity<List<OutSugestaoAgendamentoDto>> simularHorarios(@RequestBody InAgendamentoDto dto) {
         return ResponseEntity.ok(service.simularHorarios(dto));
+    }
+
+    @PostMapping("/cancelar")
+    public ResponseEntity<OutGenericStringDto> cancelar(@RequestBody InCancelarAgendamentoDto dto) {
+        OutGenericStringDto resp = service.cancelarAgendamento(dto);
+        return ResponseEntity.ok(resp);
+    }
+
+    @GetMapping("/agendados")
+    public ResponseEntity<List<OutAtendimentoDiaDto>> listarAgendados(
+            @RequestParam(name = "dia", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dia
+    ) {
+        var lista = service.listarNaoCanceladosDoDia(dia);
+        return ResponseEntity.ok(lista);
     }
 }
