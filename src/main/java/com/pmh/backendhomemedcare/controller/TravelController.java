@@ -6,12 +6,9 @@ import com.pmh.backendhomemedcare.service.TravelTimeService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = {
-        "http://localhost:3000",           // ambiente de desenvolvimento
-        "https://sistema.homemedcare.com.br" // domínio de produção
-})
+@CrossOrigin(origins = {"http://localhost:3000"})
 @RestController
-@RequestMapping("/api/travel")
+@RequestMapping("/api/api/travel")
 public class TravelController {
 
     private final TravelTimeService travelTimeService;

@@ -10,12 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = {
-        "http://localhost:3000",           // ambiente de desenvolvimento
-        "https://sistema.homemedcare.com.br" // domínio de produção
-})
+@CrossOrigin(origins = {"http://localhost:3000"})
 @RestController
-@RequestMapping("/paciente")
+@RequestMapping("/api/paciente")
 public class PacienteController {
     private final PacienteService service;
 

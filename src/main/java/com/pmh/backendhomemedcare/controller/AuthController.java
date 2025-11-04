@@ -6,12 +6,9 @@ import com.pmh.backendhomemedcare.security.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = {
-        "http://localhost:3000",           // ambiente de desenvolvimento
-        "https://sistema.homemedcare.com.br" // domínio de produção
-})
+@CrossOrigin(origins = {"http://localhost:3000"})
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService auth;

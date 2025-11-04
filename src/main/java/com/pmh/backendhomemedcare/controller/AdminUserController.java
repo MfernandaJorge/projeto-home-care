@@ -6,12 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = {
-        "http://localhost:3000",           // ambiente de desenvolvimento
-        "https://sistema.homemedcare.com.br" // domínio de produção
-})
+@CrossOrigin(origins = {"http://localhost:3000"})
 @RestController
-@RequestMapping("/admin/users")
+@RequestMapping("/api/admin/users")
 public class AdminUserController {
 
     private final AdminUserService service;
