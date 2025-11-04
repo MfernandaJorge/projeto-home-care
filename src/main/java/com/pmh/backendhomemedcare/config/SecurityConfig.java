@@ -39,17 +39,26 @@ public class SecurityConfig {
                                            JwtService jwtService,
                                            UsuarioDetailsService uds) throws Exception {
         http
-                .cors() // Habilita o CORS dentro do Spring Security
-                .and()
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Habilita o CORS dentro do Spring Security
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                );
-
-        http.addFilterBefore(new JwtAuthenticationFilter(jwtService, uds),
-                UsernamePasswordAuthenticationFilter.class);
+                        // Permitir acesso aos arquivos estáticos (frontend)
+                        .requestMatchers("/", "/index.html", "/favicon.ico", "/manifest.json", "/robots.txt", "/logo*.png").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/media/**", "/static/**").permitAll()
+                        // Permitir acesso ao console H2 (apenas desenvolvimento)
+                        .requestMatchers("/h2-console/**").permitAll()
+                        // Permitir acesso ao endpoint de login (com e sem /api)
+                        .requestMatchers("/auth/login", "/api/auth/login").permitAll()
+                        // Restringir acesso admin
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // Todas as outras requisições que começam com /api precisam de autenticação
+                        .requestMatchers("/api/**").authenticated()
+                        // Permitir acesso a tudo que não seja API (para o React Router funcionar)
+                        .anyRequest().permitAll()
+                )
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())) // Necessário para o H2 console funcionar
+                .addFilterBefore(new JwtAuthenticationFilter(jwtService, uds),
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -57,7 +66,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        // Permite o frontend tanto em desenvolvimento (3000) quanto servido pelo Spring Boot (8080)
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8080"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true); // necessário para enviar cookies ou headers Authorization
