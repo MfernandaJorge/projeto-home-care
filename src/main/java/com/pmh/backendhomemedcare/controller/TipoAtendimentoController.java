@@ -7,6 +7,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = {
+        "http://localhost:3000",           // ambiente de desenvolvimento
+        "https://sistema.homemedcare.com.br" // domínio de produção
+})
 @RestController
 @RequestMapping("/tipo-atendimento")
 public class TipoAtendimentoController {

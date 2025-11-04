@@ -10,6 +10,10 @@ import com.pmh.backendhomemedcare.model.dto.in.InProfissionalDto;
 
 import java.util.List;
 
+@CrossOrigin(origins = {
+        "http://localhost:3000",           // ambiente de desenvolvimento
+        "https://sistema.homemedcare.com.br" // domínio de produção
+})
 @RestController
 @RequestMapping("/profissional")
 public class ProfissionalController {
