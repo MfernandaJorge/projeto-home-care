@@ -43,8 +43,8 @@ public class TravelTimeService {
         );
 
         // Extrair distância e duração
-        double distancia = routeResult.routes().getFirst().summary().distance() / 1000.0; // metros → km
-        double duracao = routeResult.routes().getFirst().summary().duration() / 60.0;     // segundos → minutos
+        double distancia = routeResult.routes().get(0).summary().distance() / 1000.0; // metros → km
+        double duracao = routeResult.routes().get(0).summary().duration() / 60.0;     // segundos → minutos
 
         return new OutTravelDto(distancia, duracao);
     }

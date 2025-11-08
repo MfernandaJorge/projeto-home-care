@@ -13,7 +13,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // todas as rotas
-                        .allowedOrigins("http://localhost:3000") // origem do seu front
+                        .allowedOrigins("http://localhost:3000","http://njrn-homemedcare.cloud:8080") // origem do seu front
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
