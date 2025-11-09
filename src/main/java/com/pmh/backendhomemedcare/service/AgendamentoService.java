@@ -60,6 +60,11 @@ public class AgendamentoService {
         }
 
         LocalDateTime inicio = LocalDateTime.of(dto.diaDesejado(), dto.horaDesejada());
+
+        // Não permite agendar em datas/horas já passadas
+        if (inicio.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Não é possível agendar em data/hora passada");
+        }
         LocalDateTime fim = inicio.plusMinutes(tipo.getDuracaoMinutos())
                                   .plusMinutes((long) paciente.getEndereco().getDurationMin());
 
