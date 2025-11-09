@@ -3,7 +3,7 @@ package com.pmh.backendhomemedcare.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pmh.backendhomemedcare.exception.ExternalServiceException;
-import com.pmh.backendhomemedcare.exception.GeocodingNotFoundException;
+import com.pmh.backendhomemedcare.util.AddressUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -26,9 +26,11 @@ public class GeocodingService {
         int maxAttempts = 3;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
+                String encoded = AddressUtils.sanitizeAddress(address);
+
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create("https://nominatim.openstreetmap.org/search?q=" +
-                                address.replace(" ", "+") + "&format=json&limit=1"))
+                                encoded + "&format=json&limit=1"))
                         .header("User-Agent", userAgent)
                         .build();
 
@@ -50,4 +52,3 @@ public class GeocodingService {
         throw new ExternalServiceException("Erro inesperado ao processar geocoding.");
     }
 }
-
