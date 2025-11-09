@@ -8,6 +8,6 @@ public record OutPacienteDto(
         String documento,
         OutEnderecoDto endereco,
         LocalDate dataNascimento,
-        int telefone,
+        String telefone,
         String email
 ) {}

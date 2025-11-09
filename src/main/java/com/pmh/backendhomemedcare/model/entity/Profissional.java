@@ -21,7 +21,7 @@ public class Profissional {
 
     private int ocupacao;
 
-    private int telefone;
+    private String telefone;
 
     private String email;
 

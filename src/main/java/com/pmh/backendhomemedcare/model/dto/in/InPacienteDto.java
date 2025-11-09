@@ -8,6 +8,6 @@ public record InPacienteDto(String nome,
                             String documento,
                             @JsonProperty("endereco") InEnderecoDto inEnderecoDto,
                             LocalDate dataNascimento,
-                            int telefone,
+                            String telefone,
                             String email) {
 }

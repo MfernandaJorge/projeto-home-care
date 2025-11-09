@@ -75,11 +75,11 @@ public class DataConfig {
         enderecoRepo.saveAll(List.of(e1, e2, e3, e4, e5));
 
         // ====== PROFISSIONAIS ======
-        Profissional p1 = criarProfissional("Dra. Ana Souza", "12345678900", e1, 1, "ana.souza@homemedcare.com", 199999999);
-        Profissional p2 = criarProfissional("Dr. Bruno Lima", "98765432100", e2, 2, "bruno.lima@homemedcare.com", 199888888);
-        Profissional p3 = criarProfissional("Enf. Carla Mendes", "55566677788", e3, 3, "carla.mendes@homemedcare.com", 199777777);
-        Profissional p4 = criarProfissional("Tec. Daniel Rocha", "44455566677", e4, 4, "daniel.rocha@homemedcare.com", 199666666);
-        Profissional p5 = criarProfissional("Dr. Eduardo Faria", "33344455566", e5, 5, "eduardo.faria@homemedcare.com", 199555555);
+        Profissional p1 = criarProfissional("Dra. Ana Souza", "12345678900", e1, 1, "ana.souza@homemedcare.com", "199999999");
+        Profissional p2 = criarProfissional("Dr. Bruno Lima", "98765432100", e2, 2, "bruno.lima@homemedcare.com", "199888888");
+        Profissional p3 = criarProfissional("Enf. Carla Mendes", "55566677788", e3, 3, "carla.mendes@homemedcare.com", "199777777");
+        Profissional p4 = criarProfissional("Tec. Daniel Rocha", "44455566677", e4, 4, "daniel.rocha@homemedcare.com", "199666666");
+        Profissional p5 = criarProfissional("Dr. Eduardo Faria", "33344455566", e5, 5, "eduardo.faria@homemedcare.com", "199555555");
 
         profissionalRepo.saveAll(List.of(p1, p2, p3, p4, p5));
 
@@ -130,7 +130,7 @@ public class DataConfig {
         paciente.setDocumento("2312");
         paciente.setEndereco(endereco);
         paciente.setDataNascimento(LocalDate.of(1990, 5, 15));
-        paciente.setTelefone(1198765431);
+        paciente.setTelefone("1198765431");
         paciente.setEmail("joao.silva@example.com");
 
         pacienteRepo.save(paciente);
@@ -154,7 +154,7 @@ public class DataConfig {
         return e;
     }
 
-    private Profissional criarProfissional(String nome, String doc, Endereco e, int ocupacao, String email, int telefone) {
+    private Profissional criarProfissional(String nome, String doc, Endereco e, int ocupacao, String email, String telefone) {
         Profissional p = new Profissional();
         p.setNome(nome);
         p.setDocumento(doc);

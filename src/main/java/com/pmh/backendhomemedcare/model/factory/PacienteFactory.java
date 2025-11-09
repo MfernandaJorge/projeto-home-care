@@ -1,7 +1,6 @@
 package com.pmh.backendhomemedcare.model.factory;
 
 import com.pmh.backendhomemedcare.model.dto.in.InPacienteDto;
-import com.pmh.backendhomemedcare.model.dto.out.OutEnderecoDto;
 import com.pmh.backendhomemedcare.model.dto.out.OutPacienteDto;
 import com.pmh.backendhomemedcare.model.entity.Endereco;
 import com.pmh.backendhomemedcare.model.entity.Paciente;

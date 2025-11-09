@@ -19,6 +19,6 @@ public class Paciente {
     @JoinColumn(name = "endereco_id", nullable = false)
     private Endereco endereco;
     private LocalDate dataNascimento;
-    private int telefone;
+    private String telefone;
     private String email;
 }
