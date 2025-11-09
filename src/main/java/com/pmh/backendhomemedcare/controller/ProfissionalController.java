@@ -10,8 +10,9 @@ import com.pmh.backendhomemedcare.model.dto.in.InProfissionalDto;
 
 import java.util.List;
 
+@CrossOrigin(origins = {"http://localhost:3000"})
 @RestController
-@RequestMapping("/profissional")
+@RequestMapping("/api/profissional")
 public class ProfissionalController {
     private ProfissionalService service;
 
@@ -29,8 +30,7 @@ public class ProfissionalController {
                                                                      @RequestParam(defaultValue = "10") int size,
                                                                      @RequestParam(defaultValue = "id") String sortBy,
                                                                      @RequestParam(defaultValue = "false") boolean desc) {
-        Page<OutProfissionalDto> profissionais = service.findAllPaginated(page, size, sortBy, desc);
-        return ResponseEntity.ok(profissionais);
+        return ResponseEntity.ok(service.findAllPaginated(page, size, sortBy, desc));
     }
 
     @GetMapping("/all")

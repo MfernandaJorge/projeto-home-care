@@ -1,11 +1,13 @@
 package com.pmh.backendhomemedcare.model.dto.out;
 
-public record OutProfissionalDto(
+import java.time.LocalDate;
+
+public record OutPacienteDto(
         Long id,
         String nome,
         String documento,
         OutEnderecoDto endereco,
-        Integer ocupacao,
+        LocalDate dataNascimento,
         String telefone,
         String email
 ) {}
