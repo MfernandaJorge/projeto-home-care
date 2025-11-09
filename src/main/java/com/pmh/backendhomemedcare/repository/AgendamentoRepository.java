@@ -65,7 +65,29 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
         a.paciente.nome,
         a.profissional.nome,
         a.inicio,
-        a.fim
+        a.fim,
+        a.cancelado,
+        a.concluido
+    )
+    from Agendamento a
+    where a.profissional is not null
+      and a.inicio between :inicio and :fim
+    order by a.inicio asc
+""")
+    List<OutAtendimentoDiaDto> listarTodosNoPeriodo(
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim
+    );
+
+    @Query("""
+    select new com.pmh.backendhomemedcare.model.dto.out.OutAtendimentoDiaDto(
+        a.id,
+        a.paciente.nome,
+        a.profissional.nome,
+        a.inicio,
+        a.fim,
+        a.cancelado,
+        a.concluido
     )
     from Agendamento a
     where a.cancelado = false

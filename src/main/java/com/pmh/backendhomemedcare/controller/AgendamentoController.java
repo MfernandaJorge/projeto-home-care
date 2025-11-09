@@ -40,12 +40,18 @@ public class AgendamentoController {
         return ResponseEntity.ok(resp);
     }
 
+    @PostMapping("/concluir/{id}")
+    public ResponseEntity<OutGenericStringDto> concluir(@PathVariable Long id) {
+        OutGenericStringDto resp = service.marcarConcluido(id);
+        return ResponseEntity.ok(resp);
+    }
+
     @GetMapping("/agendados")
     public ResponseEntity<List<OutAtendimentoDiaDto>> listarAgendados(
             @RequestParam(name = "dia", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dia
     ) {
-        var lista = service.listarNaoCanceladosDoDia(dia);
+        var lista = service.listarTodosDoDia(dia);
         return ResponseEntity.ok(lista);
     }
 }

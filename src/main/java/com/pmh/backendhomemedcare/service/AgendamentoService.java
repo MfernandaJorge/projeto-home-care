@@ -244,11 +244,38 @@ public class AgendamentoService {
         );
     }
 
+    @Transactional
+    public OutGenericStringDto marcarConcluido(Long id) {
+        if (id == null) throw new IllegalArgumentException("ID do agendamento é obrigatório");
+
+        Agendamento ag = agendamentoRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Agendamento não encontrado"));
+
+        if (ag.isCancelado()) {
+            throw new RuntimeException("Não é possível concluir um agendamento cancelado.");
+        }
+        if (ag.isConcluido()) {
+            return new OutGenericStringDto("Agendamento " + ag.getId() + " já está concluído.");
+        }
+
+        ag.setConcluido(true);
+        agendamentoRepo.save(ag);
+
+        return new OutGenericStringDto("✅ Agendamento " + ag.getId() + " marcado como concluído.");
+    }
+
     public List<OutAtendimentoDiaDto> listarNaoCanceladosDoDia(LocalDate dia) {
         if (dia == null) dia = LocalDate.now();
         LocalDateTime inicio = dia.atStartOfDay();
         LocalDateTime fim = dia.atTime(LocalTime.MAX);
         return agendamentoRepo.listarNaoCanceladosNoPeriodo(inicio, fim);
+    }
+
+    public List<OutAtendimentoDiaDto> listarTodosDoDia(LocalDate dia) {
+        if (dia == null) dia = LocalDate.now();
+        LocalDateTime inicio = dia.atStartOfDay();
+        LocalDateTime fim = dia.atTime(LocalTime.MAX);
+        return agendamentoRepo.listarTodosNoPeriodo(inicio, fim);
     }
 
 

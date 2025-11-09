@@ -7,5 +7,7 @@ public record OutAtendimentoDiaDto(
         String paciente,
         String profissional,
         LocalDateTime inicio,
-        LocalDateTime fim
+        LocalDateTime fim,
+        boolean cancelado,
+        boolean concluido
 ) {}
