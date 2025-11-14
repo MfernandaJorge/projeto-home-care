@@ -194,6 +194,7 @@ public class AgendamentoService {
 
             if (!conflita) {
                 sugestoes.add(new OutSugestaoAgendamentoDto(
+                        prof.getId(),
                         prof.getNome(),
                         data,
                         hora,
