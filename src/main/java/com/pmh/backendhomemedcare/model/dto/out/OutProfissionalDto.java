@@ -7,5 +7,6 @@ public record OutProfissionalDto(
         OutEnderecoDto endereco,
         Integer ocupacao,
         String telefone,
-        String email
+        String email,
+        Long jornadaId
 ) {}

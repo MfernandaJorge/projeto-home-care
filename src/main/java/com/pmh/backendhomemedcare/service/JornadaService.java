@@ -4,6 +4,7 @@ import com.pmh.backendhomemedcare.model.dto.out.DisponibilidadeDia;
 import com.pmh.backendhomemedcare.model.entity.*;
 import com.pmh.backendhomemedcare.model.enums.TipoDisponibilidade;
 import com.pmh.backendhomemedcare.repository.JornadaProfissionalRepo;
+import com.pmh.backendhomemedcare.repository.ProfissionalRepo;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -13,10 +14,10 @@ import java.util.Optional;
 @Service
 public class JornadaService {
 
-    private final JornadaProfissionalRepo jornadaRepo;
+    private final ProfissionalRepo profissionalRepo;
 
-    public JornadaService(JornadaProfissionalRepo jornadaRepo) {
-        this.jornadaRepo = jornadaRepo;
+    public JornadaService(JornadaProfissionalRepo jornadaRepo, ProfissionalRepo profissionalRepo) {
+        this.profissionalRepo = profissionalRepo;
     }
 
     /**
@@ -26,8 +27,13 @@ public class JornadaService {
 
     @Cacheable("jornadas")
     public JornadaProfissional obterJornadaCompleta(Long profissionalId) {
-        return jornadaRepo.findByProfissionalId(profissionalId)
-                .orElseThrow(() -> new RuntimeException("Jornada não encontrada para o profissional: " + profissionalId));
+        Profissional p = profissionalRepo.findById(profissionalId)
+                .orElseThrow(() -> new RuntimeException("Profissional não encontrado: " + profissionalId));
+        JornadaProfissional j = p.getJornada();
+        if (j == null) throw new RuntimeException("Jornada não encontrada para o profissional: " + profissionalId);
+        // ensure dias are loaded (optional)
+        j.getDiasSemana();
+        return j;
     }
 
     /**

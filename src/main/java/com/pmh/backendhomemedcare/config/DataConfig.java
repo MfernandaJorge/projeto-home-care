@@ -83,24 +83,86 @@ public class DataConfig {
 
         profissionalRepo.saveAll(List.of(p1, p2, p3, p4, p5));
 
-        // ====== JORNADAS ======
-        criarJornadaPadrao(p1, LocalTime.of(8, 0), LocalTime.of(17, 0),
-                LocalTime.of(12, 0), LocalTime.of(13, 0),
-                List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY));
+        // ====== JORNADA TEMPLATES ======
+        // Create three templates: manhã (Mon-Fri 07:00-17:00, 1h lunch), noite (Mon-Fri 17:00-03:00, 1h dinner), fimDeSemana (Sat+Sun 08:00-15:00)
 
-        criarJornadaPadrao(p2, LocalTime.of(10, 0), LocalTime.of(19, 0),
-                LocalTime.of(13, 0), LocalTime.of(14, 0),
-                List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY));
+        JornadaProfissional jornadaManha = new JornadaProfissional();
+        List<JornadaDia> diasManha = new ArrayList<>();
+        for (DayOfWeek d : List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) {
+            JornadaDia jd = new JornadaDia();
+            jd.setDiaSemana(d);
+            jd.setInicio(LocalTime.of(7, 0));
+            jd.setFim(LocalTime.of(17, 0));
+            jd.setInicioAlmoco(LocalTime.of(12, 0));
+            jd.setFimAlmoco(LocalTime.of(13, 0));
+            jd.setTrabalha(true);
+            jd.setJornada(jornadaManha);
+            diasManha.add(jd);
+        }
+        // add saturday and sunday off entries (trabalha=false)
+        for (DayOfWeek d : List.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)) {
+            JornadaDia jd = new JornadaDia();
+            jd.setDiaSemana(d);
+            jd.setTrabalha(false);
+            jd.setJornada(jornadaManha);
+            diasManha.add(jd);
+        }
+        jornadaManha.setDiasSemana(diasManha);
+        jornadaRepo.save(jornadaManha);
 
-        criarJornadaPadrao(p3, LocalTime.of(18, 0), LocalTime.of(23, 59),
-                null, null,
-                List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY));
+        JornadaProfissional jornadaNoite = new JornadaProfissional();
+        List<JornadaDia> diasNoite = new ArrayList<>();
+        for (DayOfWeek d : List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) {
+            JornadaDia jd = new JornadaDia();
+            jd.setDiaSemana(d);
+            jd.setInicio(LocalTime.of(17, 0));
+            jd.setFim(LocalTime.of(3, 0));
+            jd.setInicioAlmoco(LocalTime.of(22, 0)); // jantar start
+            jd.setFimAlmoco(LocalTime.of(23, 0)); // jantar end
+            jd.setTrabalha(true);
+            jd.setJornada(jornadaNoite);
+            diasNoite.add(jd);
+        }
+        // saturday and sunday defaultize to trabalhar false but provide weekend schedule separately
+        for (DayOfWeek d : List.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)) {
+            JornadaDia jd = new JornadaDia();
+            jd.setDiaSemana(d);
+            jd.setTrabalha(false);
+            jd.setJornada(jornadaNoite);
+            diasNoite.add(jd);
+        }
+        jornadaNoite.setDiasSemana(diasNoite);
+        jornadaRepo.save(jornadaNoite);
 
-        criarJornadaPlantonista(p4);
+        JornadaProfissional jornadaFimSemana = new JornadaProfissional();
+        List<JornadaDia> diasFim = new ArrayList<>();
+        for (DayOfWeek d : DayOfWeek.values()) {
+            JornadaDia jd = new JornadaDia();
+            jd.setDiaSemana(d);
+            if (d == DayOfWeek.SATURDAY || d == DayOfWeek.SUNDAY) {
+                jd.setInicio(LocalTime.of(8, 0));
+                jd.setFim(LocalTime.of(15, 0));
+                jd.setTrabalha(true);
+            } else {
+                jd.setTrabalha(false);
+            }
+            jd.setJornada(jornadaFimSemana);
+            diasFim.add(jd);
+        }
+        jornadaFimSemana.setDiasSemana(diasFim);
+        jornadaRepo.save(jornadaFimSemana);
 
-        criarJornadaPadrao(p5, LocalTime.of(8, 0), LocalTime.of(17, 0),
-                LocalTime.of(12, 0), LocalTime.of(13, 0),
-                List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY));
+        // ====== ASSIGN TEMPLATE JORNADAS TO PROFESSIONALS ======
+        // assign templates directly so professionals reference these fixed jornadas
+        p1.setJornada(jornadaManha);
+        p2.setJornada(jornadaNoite);
+        p3.setJornada(jornadaNoite);
+        // p4 keep plantonista (create specific jornada for this one)
+        JornadaProfissional plantao = criarJornadaPlantonista();
+        p4.setJornada(plantao);
+        p5.setJornada(jornadaManha);
+
+        profissionalRepo.saveAll(List.of(p1, p2, p3, p4, p5));
 
         System.out.println("✅ Profissionais e jornadas criados!");
     }
@@ -165,32 +227,8 @@ public class DataConfig {
         return p;
     }
 
-    private void criarJornadaPadrao(Profissional profissional, LocalTime inicio, LocalTime fim,
-                                    LocalTime almocoInicio, LocalTime almocoFim, List<DayOfWeek> dias) {
-
+    private JornadaProfissional criarJornadaPlantonista() {
         JornadaProfissional jornada = new JornadaProfissional();
-        jornada.setProfissional(profissional);
-
-        List<JornadaDia> diasSemana = new ArrayList<>();
-        for (DayOfWeek d : dias) {
-            JornadaDia jd = new JornadaDia();
-            jd.setDiaSemana(d);
-            jd.setInicio(inicio);
-            jd.setFim(fim);
-            jd.setInicioAlmoco(almocoInicio);
-            jd.setFimAlmoco(almocoFim);
-            jd.setTrabalha(true);
-            jd.setJornada(jornada);
-            diasSemana.add(jd);
-        }
-
-        jornada.setDiasSemana(diasSemana);
-        jornadaRepo.save(jornada);
-    }
-
-    private void criarJornadaPlantonista(Profissional profissional) {
-        JornadaProfissional jornada = new JornadaProfissional();
-        jornada.setProfissional(profissional);
 
         List<JornadaDia> dias = new ArrayList<>();
         for (DayOfWeek d : DayOfWeek.values()) {
@@ -205,5 +243,6 @@ public class DataConfig {
 
         jornada.setDiasSemana(dias);
         jornadaRepo.save(jornada);
+        return jornada;
     }
 }

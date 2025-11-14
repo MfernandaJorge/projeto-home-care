@@ -25,6 +25,9 @@ public class ProfissionalFactory {
     }
 
     public OutProfissionalDto toOutProfissionalDto(Profissional profissional) {
+        Long jornadaId = null;
+        if (profissional.getJornada() != null) jornadaId = profissional.getJornada().getId();
+
         return new OutProfissionalDto(
                 profissional.getId(),
                 profissional.getNome(),
@@ -32,7 +35,8 @@ public class ProfissionalFactory {
                 enderecoFactory.toOutEnderecoDto(profissional.getEndereco()),
                 profissional.getOcupacao(),
                 profissional.getTelefone(),
-                profissional.getEmail()
+                profissional.getEmail(),
+                jornadaId
         );
     }
 }
