@@ -6,9 +6,10 @@ public record OutEnderecoDto(
         String cidade,
         String estado,
         String cep,
-        Integer numero,
-        Double distanceKm,
-        Double durationMin,
+        int numero,
+        double distanceKm,
+        double durationMin,
         Double latitude,
         Double longitude
 ) {}
+

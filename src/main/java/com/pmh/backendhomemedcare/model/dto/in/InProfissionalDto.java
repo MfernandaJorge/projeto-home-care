@@ -7,5 +7,7 @@ public record InProfissionalDto(String nome,
                                 @JsonProperty("endereco") InEnderecoDto inEnderecoDto,
                                 int ocupacao,
                                 String telefone,
-                                String email) {
+                                String email,
+                                Long jornadaId,
+                                @JsonProperty("jornada") InJornadaDto jornadaDto) {
 }

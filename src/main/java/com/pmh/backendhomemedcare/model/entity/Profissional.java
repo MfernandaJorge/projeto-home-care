@@ -25,4 +25,8 @@ public class Profissional {
 
     private String email;
 
+    @ManyToOne
+    @JoinColumn(name = "jornada_id")
+    private JornadaProfissional jornada;
+
 }
