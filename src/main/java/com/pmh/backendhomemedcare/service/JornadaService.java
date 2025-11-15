@@ -63,11 +63,30 @@ public class JornadaService {
                 .filter(d -> d.getDiaSemana() == diaSemana)
                 .findFirst();
 
+        // check previous day in case the previous day's shift spills into this date (e.g. 17:00-03:00)
+        DayOfWeek diaAnterior = data.minusDays(1).getDayOfWeek();
+        Optional<JornadaDia> diaPrev = jornada.getDiasSemana()
+                .stream()
+                .filter(d -> d.getDiaSemana() == diaAnterior)
+                .findFirst();
+
+        // if previous day had a shift that ends after midnight (fim before inicio), that shift covers the early hours of 'data'
+        if (diaPrev.isPresent() && diaPrev.get().isTrabalha() && diaPrev.get().getFim() != null && diaPrev.get().getInicio() != null
+                && diaPrev.get().getFim().isBefore(diaPrev.get().getInicio())) {
+            // return availability for the morning part (00:00 .. fimPrev)
+            return new DisponibilidadeDia(data, LocalTime.MIDNIGHT, diaPrev.get().getFim(), TipoDisponibilidade.NORMAL);
+        }
+
         if (dia.isEmpty() || !dia.get().isTrabalha()) {
             return new DisponibilidadeDia(data, null, null, TipoDisponibilidade.FOLGA);
         }
 
         JornadaDia jd = dia.get();
+        // if the day's shift spills to next day, expose the part that belongs to this calendar date (inicio .. 23:59:59.999)
+        if (jd.getInicio() != null && jd.getFim() != null && jd.getFim().isBefore(jd.getInicio())) {
+            return new DisponibilidadeDia(data, jd.getInicio(), LocalTime.MAX, TipoDisponibilidade.NORMAL);
+        }
+
         return new DisponibilidadeDia(data, jd.getInicio(), jd.getFim(), TipoDisponibilidade.NORMAL);
     }
 

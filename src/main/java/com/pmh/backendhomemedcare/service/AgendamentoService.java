@@ -212,8 +212,10 @@ public class AgendamentoService {
             inicioJanela = inicioDisp;
         }
 
-        if (fimJanela.isAfter(fimDisp.plusMinutes(30))) {
-            fimJanela = fimDisp.plusMinutes(30);
+        // avoid calling plusMinutes on LocalTime.MAX which throws
+        LocalTime fimLimite = fimDisp.equals(LocalTime.MAX) ? LocalTime.MAX : fimDisp.plusMinutes(30);
+        if (fimJanela.isAfter(fimLimite)) {
+            fimJanela = fimLimite;
         }
 
         return new TimeRange(inicioJanela, fimJanela);
