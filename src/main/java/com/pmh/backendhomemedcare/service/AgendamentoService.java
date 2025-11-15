@@ -174,6 +174,23 @@ public class AgendamentoService {
         return sugestoes;
     }
 
+    private TimeRange calcularJanela(LocalTime horaRef, LocalTime inicioDisp, LocalTime fimDisp) {
+        LocalTime inicioJanela = horaRef.minusMinutes(30);
+        LocalTime fimJanela = horaRef.plusMinutes(30);
+
+        if (inicioJanela.isBefore(inicioDisp)) {
+            inicioJanela = inicioDisp;
+        }
+
+        // avoid calling plusMinutes on LocalTime.MAX which can overflow
+        LocalTime fimLimite = LocalTime.MAX.equals(fimDisp) ? LocalTime.MAX : fimDisp.plusMinutes(30);
+        if (fimJanela.isAfter(fimLimite)) {
+            fimJanela = fimLimite;
+        }
+
+        return new TimeRange(inicioJanela, fimJanela);
+    }
+
     private void gerarHorariosDisponiveis(
             Profissional prof,
             LocalDate data,
@@ -189,8 +206,9 @@ public class AgendamentoService {
             LocalDateTime ini = LocalDateTime.of(data, hora);
             LocalDateTime fim = ini.plusMinutes(duracao + acrescimo);
 
-            boolean conflita = agenda.stream()
-                    .anyMatch(a -> !(a.getFim().isBefore(ini) || a.getInicio().isAfter(fim)));
+            // use repository overlap query to catch appointments that started outside the day's range but overlap
+            List<Agendamento> overlappers = agendamentoRepo.findAtivosByProfissionalIdAndOverlap(prof.getId(), ini, fim);
+            boolean conflita = !overlappers.isEmpty();
 
             if (!conflita) {
                 sugestoes.add(new OutSugestaoAgendamentoDto(
@@ -204,22 +222,6 @@ public class AgendamentoService {
         }
     }
 
-    private TimeRange calcularJanela(LocalTime horaRef, LocalTime inicioDisp, LocalTime fimDisp) {
-        LocalTime inicioJanela = horaRef.minusMinutes(30);
-        LocalTime fimJanela = horaRef.plusMinutes(30);
-
-        if (inicioJanela.isBefore(inicioDisp)) {
-            inicioJanela = inicioDisp;
-        }
-
-        // avoid calling plusMinutes on LocalTime.MAX which throws
-        LocalTime fimLimite = fimDisp.equals(LocalTime.MAX) ? LocalTime.MAX : fimDisp.plusMinutes(30);
-        if (fimJanela.isAfter(fimLimite)) {
-            fimJanela = fimLimite;
-        }
-
-        return new TimeRange(inicioJanela, fimJanela);
-    }
 
     @Transactional
     public OutGenericStringDto cancelarAgendamento(InCancelarAgendamentoDto dto) {
@@ -284,6 +286,40 @@ public class AgendamentoService {
         LocalDateTime inicio = dia.atStartOfDay();
         LocalDateTime fim = dia.atTime(LocalTime.MAX);
         return agendamentoRepo.listarTodosNoPeriodo(inicio, fim);
+    }
+
+
+    public Map<String, Object> debugDisponibilidade(Long profissionalId, LocalDate data, LocalTime horaRef) {
+        Objects.requireNonNull(profissionalId);
+        Objects.requireNonNull(data);
+        Objects.requireNonNull(horaRef);
+
+        Profissional prof = profissionalRepo.findById(profissionalId)
+                .orElseThrow(() -> new RuntimeException("Profissional não encontrado"));
+
+        JornadaProfissional jornada = jornadaService.obterJornadaCompleta(profissionalId);
+        var disp = jornadaService.consultarDisponibilidadeLocal(jornada, data, horaRef);
+        var janela = calcularJanela(horaRef, disp.inicio() == null ? LocalTime.MIN : disp.inicio(), disp.fim() == null ? LocalTime.MAX : disp.fim());
+
+        // fetch overlapping appointments for the whole day window
+        List<Agendamento> overlappers = agendamentoRepo.findAtivosByProfissionalIdAndOverlap(
+                profissionalId,
+                data.atStartOfDay(),
+                data.atTime(LocalTime.MAX)
+        );
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("disponibilidade", disp);
+        resp.put("janela", Map.of("inicio", janela.inicio(), "fim", janela.fim()));
+        resp.put("overlappersCount", overlappers.size());
+        resp.put("overlappers", overlappers.stream().map(a -> Map.of(
+                "id", a.getId(),
+                "inicio", a.getInicio(),
+                "fim", a.getFim(),
+                "paciente", a.getPaciente() != null ? a.getPaciente().getNome() : null
+        )).toList());
+
+        return resp;
     }
 
 

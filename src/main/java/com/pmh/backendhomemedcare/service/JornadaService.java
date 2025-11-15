@@ -7,11 +7,13 @@ import com.pmh.backendhomemedcare.repository.JornadaProfissionalRepo;
 import com.pmh.backendhomemedcare.repository.ProfissionalRepo;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.*;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class JornadaService {
 
     private final ProfissionalRepo profissionalRepo;
@@ -40,6 +42,16 @@ public class JornadaService {
      * 🔹 Consulta disponibilidade usando jornada já carregada (sem nova query).
      */
     public DisponibilidadeDia consultarDisponibilidadeLocal(JornadaProfissional jornada, LocalDate data) {
+        // default behavior: choose segment by mid-day reference
+        return consultarDisponibilidadeLocal(jornada, data, LocalTime.NOON);
+    }
+
+    /**
+     * Overload que recebe uma hora de referência para escolher corretamente
+     * entre a parte noturna (inicio..23:59) ou a parte matutina (00:00..fim)
+     * quando um turno atravessa a meia-noite.
+     */
+    public DisponibilidadeDia consultarDisponibilidadeLocal(JornadaProfissional jornada, LocalDate data, LocalTime referencia) {
 
         // 1️⃣ Verifica exceções (folga ou plantão)
         Optional<JornadaExcecao> excecao = jornada.getExcecoes()
@@ -63,17 +75,38 @@ public class JornadaService {
                 .filter(d -> d.getDiaSemana() == diaSemana)
                 .findFirst();
 
-        // check previous day in case the previous day's shift spills into this date (e.g. 17:00-03:00)
         DayOfWeek diaAnterior = data.minusDays(1).getDayOfWeek();
         Optional<JornadaDia> diaPrev = jornada.getDiasSemana()
                 .stream()
                 .filter(d -> d.getDiaSemana() == diaAnterior)
                 .findFirst();
 
-        // if previous day had a shift that ends after midnight (fim before inicio), that shift covers the early hours of 'data'
-        if (diaPrev.isPresent() && diaPrev.get().isTrabalha() && diaPrev.get().getFim() != null && diaPrev.get().getInicio() != null
-                && diaPrev.get().getFim().isBefore(diaPrev.get().getInicio())) {
-            // return availability for the morning part (00:00 .. fimPrev)
+        boolean prevWrap = diaPrev.isPresent() && diaPrev.get().isTrabalha() && diaPrev.get().getInicio() != null && diaPrev.get().getFim() != null && diaPrev.get().getFim().isBefore(diaPrev.get().getInicio());
+        boolean thisWrap = dia.isPresent() && dia.get().isTrabalha() && dia.get().getInicio() != null && dia.get().getFim() != null && dia.get().getFim().isBefore(dia.get().getInicio());
+
+        // If neither works and day is empty or not working => folga
+        if ((dia.isEmpty() || !dia.get().isTrabalha()) && !prevWrap) {
+            return new DisponibilidadeDia(data, null, null, TipoDisponibilidade.FOLGA);
+        }
+
+        // If both previous day and this day wrap (typical for night shifts), choose segment based on reference time
+        if (prevWrap && thisWrap) {
+            // morning segment from previous day's spill: 00:00 .. fimPrev
+            LocalTime fimPrev = diaPrev.get().getFim();
+            // evening segment from today's start: inicioThis .. 23:59
+            LocalTime inicioThis = dia.get().getInicio();
+
+            // choose based on referencia: if reference is in the evening choose evening segment, if early morning choose morning
+            if (referencia != null && (referencia.isAfter(LocalTime.of(12, 0)) || referencia.equals(LocalTime.of(12,0)))) {
+                return new DisponibilidadeDia(data, inicioThis, LocalTime.MAX, TipoDisponibilidade.NORMAL);
+            } else {
+                return new DisponibilidadeDia(data, LocalTime.MIDNIGHT, fimPrev, TipoDisponibilidade.NORMAL);
+            }
+        }
+
+        // if previous day wraps and this day doesn't work, return morning part
+        if (prevWrap) {
+            log.debug("[jornada] prevWrap true e dia atual nao trabalha: retornando MIDNIGHT..{}", diaPrev.get().getFim());
             return new DisponibilidadeDia(data, LocalTime.MIDNIGHT, diaPrev.get().getFim(), TipoDisponibilidade.NORMAL);
         }
 

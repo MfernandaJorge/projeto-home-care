@@ -59,6 +59,21 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
             @Param("fim") LocalDateTime fim
     );
 
+    // procura agendamentos ativos que se sobrepõem a um intervalo (inicio..fim)
+    @Query("""
+    SELECT a FROM Agendamento a
+    WHERE a.profissional.id = :profissionalId
+      AND a.cancelado = FALSE
+      AND a.concluido = FALSE
+      AND a.inicio < :fim
+      AND a.fim > :inicio
+""")
+    List<Agendamento> findAtivosByProfissionalIdAndOverlap(
+            @Param("profissionalId") Long profissionalId,
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim
+    );
+
     @Query("""
     select new com.pmh.backendhomemedcare.model.dto.out.OutAtendimentoDiaDto(
         a.id,
