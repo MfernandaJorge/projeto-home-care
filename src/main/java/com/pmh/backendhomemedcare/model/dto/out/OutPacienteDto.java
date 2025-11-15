@@ -9,5 +9,6 @@ public record OutPacienteDto(
         OutEnderecoDto endereco,
         LocalDate dataNascimento,
         String telefone,
-        String email
+        String email,
+        double distanceKm
 ) {}

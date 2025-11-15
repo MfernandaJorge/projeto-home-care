@@ -1,6 +1,7 @@
 package com.pmh.backendhomemedcare.model.factory;
 
 import com.pmh.backendhomemedcare.model.dto.in.InPacienteDto;
+import com.pmh.backendhomemedcare.model.dto.out.OutEnderecoDto;
 import com.pmh.backendhomemedcare.model.dto.out.OutPacienteDto;
 import com.pmh.backendhomemedcare.model.entity.Endereco;
 import com.pmh.backendhomemedcare.model.entity.Paciente;
@@ -27,14 +28,23 @@ public class PacienteFactory {
     }
 
     public OutPacienteDto toOutPacienteDto(Paciente paciente) {
+        double distance = -1;
+        OutEnderecoDto outEndereco = null;
+
+        if (paciente.getEndereco() != null) {
+            distance = paciente.getEndereco().getDistanceKm();
+            outEndereco = enderecoFactory.toOutEnderecoDto(paciente.getEndereco());
+        }
+
         return new OutPacienteDto(
                 paciente.getId(),
                 paciente.getNome(),
                 paciente.getDocumento(),
-                enderecoFactory.toOutEnderecoDto(paciente.getEndereco()),
+                outEndereco,
                 paciente.getDataNascimento(),
                 paciente.getTelefone(),
-                paciente.getEmail()
+                paciente.getEmail(),
+                distance
         );
     }
 }
