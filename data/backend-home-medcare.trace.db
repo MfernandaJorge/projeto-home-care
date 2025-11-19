@@ -1,0 +1,16 @@
+2025-11-18 21:43:34.775037-03:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * FROM PACIENTE \000d\000aPROFISSIONAL \000d\000a[*]TIPO_ATENDIMENTO"; SQL statement:
+SELECT * FROM PACIENTE 
+PROFISSIONAL 
+TIPO_ATENDIMENTO [42000-232]
+2025-11-18 21:43:49.649773-03:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * FROM PACIENTE \000d\000a[*]SELECT * PROFISSIONAL \000d\000aSELECT * TIPO_ATENDIMENTO"; SQL statement:
+SELECT * FROM PACIENTE 
+SELECT * PROFISSIONAL 
+SELECT * TIPO_ATENDIMENTO [42000-232]
+2025-11-18 21:43:56.212467-03:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * [*]PROFISSIONAL"; SQL statement:
+SELECT * PROFISSIONAL [42000-232]
+2025-11-18 21:43:56.212971-03:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * [*]TIPO_ATENDIMENTO"; SQL statement:
+SELECT * TIPO_ATENDIMENTO [42000-232]
